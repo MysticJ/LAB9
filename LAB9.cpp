@@ -26,6 +26,8 @@ When the game is over, list the weapons and their total firepower.
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <stdio.h>
+#include <cstring>
 using namespace std;
 
 struct Weapon{
@@ -38,6 +40,7 @@ struct Minion{
 	char Name[10];
 	int row;
 	int col;
+	int TotalPower;
 	Weapon* first;
 };
 
@@ -48,7 +51,7 @@ void SplitWeapon(int map[][15], const Minion x, const Minion y, const Minion z);
 
 int main() {
 	// Initialize Minion
-	Minion Kevin = {"Kevin", 14, 0, nullptr}, Carl = {"Carl", 14, 7, nullptr}, Jerry = {"Jerry", 14, 14, nullptr};
+	Minion Kevin = {"Kevin", 14, 0, 0, nullptr}, Carl = {"Carl", 14, 7, 0, nullptr}, Jerry = {"Jerry", 14, 14, 0, nullptr};
 	// Struct an 15x15 int array and initialize it
 	int map[15][15];
 	InitMap(map);
@@ -131,7 +134,9 @@ void MoveKevin(int map[][15], Minion& x){
 
 }
 
+// if x.first == nullptr
 void MoveJerry(int map[][15], Minion& x){
+	// move
 	char direction;
 	cout<<x.Name<<", it is your turn to move!"<<endl;
 	do {
@@ -150,5 +155,55 @@ void MoveJerry(int map[][15], Minion& x){
 	else {
 		x.row=(x.row-1<0)?0:x.row-1;
 	}
-	// get monster
+	// get weapon
+	for (int i=1; i<10; i++){
+		if (map[x.row][x.col]==i){
+			x.TotalPower +=i;
+			Weapon* p = new Weapon;
+			strcpy(p->WeaponName, "EggBeater");
+			p->Power = i;
+			p->next = nullptr;
+			x.first = p;
+			delete p;
+			map[x.row][x.col]=0;
+			break;
+		}
+	}
+}
+
+// if x.first != nullptr
+void MoveJerry(int map[][15], Minion& x, Weapon& w){
+	// move
+	char direction;
+	cout<<x.Name<<", it is your turn to move!"<<endl;
+	do {
+		cout<<"Enter \'a\' to move right, enter \'s\' to move downward, enter \'d\' to move left, enter \'w\' to move upward:";
+		cin>>direction;
+	} while ((direction!='a')||(direction!='s')||(direction!='d')||(direction!='w'));
+	if (direction=='a'){
+		x.col=(x.col-1<0)?0:x.col-1;
+	}
+	else if (direction=='s'){
+		x.row=(x.row+1>14)?14:x.row+1;
+	}
+	else if (direction=='d'){
+		x.col=(x.col+1>14)?14:x.col+1;
+	}
+	else {
+		x.row=(x.row-1<0)?0:x.row-1;
+	}
+	// get weapon
+	for (int i=1; i<10; i++){
+		if (map[x.row][x.col]==i){
+			x.TotalPower +=i;
+			Weapon* p = new Weapon;
+			strcpy(p->WeaponName, "EggBeater");
+			p->Power = i;
+			p->next = nullptr;
+			w.next = p;
+			delete p;
+			map[x.row][x.col]=0;
+			break;
+		}
+	}
 }
