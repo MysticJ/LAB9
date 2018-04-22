@@ -8,7 +8,7 @@
 
 /*
 Graba-Graba! You are Minion Jerry! You and your Weapons Team buddies Kevin & Carl are
-playing a game of Graba-Graba. On a 15 x 15 factory floor, Dr. Nefario¡¦s wacky weapons
+playing a game of Graba-Graba. On a 15 x 15 factory floor, Dr. Nefarioï¿½ï¿½s wacky weapons
 machine spits out weapons on the floor at random! The firepower and weapons it spits out are:
 10 FartGun, 9 ShrinkRay, 8, FreezeRay, 7 RocketLauncher, 6 Dynamite, 5 FireExtinguisher, 4 Axe,
 3 Scythe, 2 Cleaver, and 1 EggBeater. For each move you make, the probability each weapon
@@ -50,11 +50,12 @@ void Display(int map[][15], const Minion x, const Minion y, const Minion z);
 bool CheckEmpty(int row, int col, int map[][15], const Minion x, const Minion y, const Minion z);
 void SpitWeapon(int map[][15], const Minion x, const Minion y, const Minion z);
 void GetWeapon(char weapons[][20], int map[][15], Minion& x);
+void OneRound(int map[][15], char weapons[][20], Minion& Kevin, Minion& Carl, Minion& Jerry);
 void ShowResult(const Minion x, const Minion y, const Minion z);
 
 int main() {
 	// Initialize Minion
-	Minion Kevin = {"Kevin", 14, 0, 0, nullptr}, Carl = {"Carl", 14, 7, 0, nullptr}, Jerry = {"Jerry", 14, 14, 0, nullptr};
+	Minion Kevin = {"Kevin", 7, 7, 0, nullptr}, Carl = {"Carl", 7, 7, 0, nullptr}, Jerry = {"Jerry", 7, 7, 0, nullptr};
 	// Struct an 15x15 int array and initialize it
 	int map[15][15];
 	InitMap(map);
@@ -161,13 +162,24 @@ void GetWeapon(char weapons[][20], int map[][15], Minion& x){
 			p->Power = i;
 			p->next = nullptr; // it is the last object of the linked list
 			// NOTE: at this time, the newly created object is not yet part of the list
-			for (Weapon* pp = x.first; pp; pp=pp->next){ // trace to the last object of the list created
-				if (pp==nullptr){
-					pp = p; // add the new struct to the end of the list
-					break;  // that is, to make the "Weapon* next" to be the address of the new object
-				}
+//			if (x.first==nullptr){
+//				x.first=p;
+//				cout<<"Weapon name is"<<p->WeaponName<<endl;
+//			}
+//			else{
+//				for (Weapon* pp = x.first; pp; pp=pp->next){ // trace to the last object of the list created
+//					if (pp==nullptr){
+//						pp = p; // add the new struct to the end of the list
+//						break;  // that is, to make the "Weapon* next" to be the address of the new object
+//					}
+//				}
+//			}
+			Weapon* pp=x.first;
+			while(pp != nullptr){
+				pp=pp->next;
 			}
-			delete p;
+			pp=p;
+//			delete p;
 			map[x.row][x.col]=0;
 			break;
 		}
@@ -191,10 +203,68 @@ void MoveCarl(int map[][15], char weapons[][20], Minion& x){
 	// get weapon
 	GetWeapon(weapons, map, x);
 }
-
+int Max(int x, int y){
+	if(x>y)
+		return x;
+	else
+		return y;
+}
 void MoveKevin(int map[][15], char weapons[][20], Minion& x){
 	// ???
+	int value=Max(15-x.col,15-x.row)-1;
+//	cout<<"value: "<<value<<endl;
+//	cout<<"Kevin position: "<<x.row<<"\t"<<x.col<<endl;
+	int max_bomb=0;
+	int row_p=0,col_p=0;
+	int pos_x,pos_y;
+	for (int i=1;i<=value;i++){
+		for (col_p=x.col-i;col_p<=x.col+i;col_p++){
+			for(row_p=x.row-i;row_p<=x.row+i;row_p++){
+				if(map[row_p][col_p]>max_bomb){
+					max_bomb=map[row_p][col_p];
+					pos_x=row_p; pos_y=col_p;
+					//cout<<"max_bomb: "<<max_bomb<<endl;
+				}
+			}
+		}
+		if(max_bomb!=0){
+			//cout<<"max_bomb: "<<max_bomb<<"\tpos_x: "<<pos_x<<"\tpos_y: "<<pos_y<<endl;
+			break;
+		}
+	}
+//	cout<<"max_bomb: "<<max_bomb<<"\trow_p: "<<row_p<<"\tcol_p: "<<col_p<<endl;
+	if(pos_x>x.row){
+		x.row=(x.row+1>14)?14:x.row+1;
+		if(pos_y>x.row)
+			x.col=(x.col+1>14)?14:x.col+1;
+		else if(pos_y<x.row)
+			x.col=(x.col-1>14)?14:x.col-1;
+		else
+			x.col=(x.col>14)?14:x.col;
+	}
+	else if(pos_x<x.row){
+		x.row=(x.row-1>14)?14:x.row-1;
+		if(pos_y>x.col)
+			x.col=(x.col+1>14)?14:x.col+1;
+		else if(pos_y<x.col)
+			x.col=(x.col-1>14)?14:x.col-1;
+		else
+			x.col=(x.col>14)?14:x.col;
+	}
+	else if(pos_x==x.row){
+		x.row=(x.row>14)?14:x.row;
+		if(pos_y>x.col)
+			x.col=(x.col+1>14)?14:x.col+1;
+		else if(pos_y<x.col)
+			x.col=(x.col-1>14)?14:x.col-1;
+		else
+			x.col=(x.col>14)?14:x.col;
+		}
+	cout<<"Kevin next position: "<<x.row<<"\t"<<x.col<<endl;
 	GetWeapon(weapons, map, x);
+
+
+
 }
 
 void MoveJerry(int map[][15], char weapons[][20], Minion& x){
@@ -202,7 +272,7 @@ void MoveJerry(int map[][15], char weapons[][20], Minion& x){
 	char direction;
 	cout<<x.Name<<", it is your turn to move!"<<endl;
 	do {
-		cout<<"Enter \'a\' to move right, enter \'s\' to move downward, enter \'d\' to move left, enter \'w\' to move upward:";
+		cout<<"Enter \'a\' to move left, enter \'s\' to move downward, enter \'d\' to move right, enter \'w\' to move upward:";
 		cin>>direction;
 	} while ((direction!='a')&&(direction!='s')&&(direction!='d')&&(direction!='w'));
 	if (direction=='a'){
@@ -224,12 +294,31 @@ void MoveJerry(int map[][15], char weapons[][20], Minion& x){
 void OneRound(int map[][15], char weapons[][20], Minion& Kevin, Minion& Carl, Minion& Jerry){
 	SpitWeapon(map, Kevin, Carl, Jerry);
 	Display(map, Kevin, Carl, Jerry);
+	MoveJerry(map, weapons, Jerry);
 	MoveKevin(map, weapons, Kevin);
 	MoveCarl(map, weapons, Carl);
-	MoveJerry(map, weapons, Jerry);
 	Display(map, Kevin, Carl, Jerry);
 }
 
 void ShowResult(const Minion x, const Minion y, const Minion z){
+	cout<<"Kevin's Weapon: ";
+	Weapon* px=x.first;
+	while(px->next!=nullptr){
+		cout<<px->WeaponName<<"\t";
+	}
+	cout<<endl;
+	cout<<"Carl's Weapon: ";
+	Weapon* py=y.first;
+	while(py->next!=nullptr){
+		cout<<py->WeaponName<<"\t";
+	}
+	cout<<endl;
+	cout<<"Jerry's Weapon: ";
+	Weapon* pz=z.first;
+	while(pz->next!=nullptr){
+		cout<<pz->WeaponName<<"\t";
+	}
+	cout<<endl;
+
 
 }
